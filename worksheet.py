@@ -1,6 +1,5 @@
 import sublime
 import sublime_plugin
-import threading
 import repl
 
 
@@ -38,10 +37,10 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         next_start = line.end()
         line_text = view.substr(line)
         is_last_line = "\n" not in line_text
-        if is_last_line:
+        if is_last_line:                        # this doesn't actually work
             next_start += 1
             line_text += "\n"
-        thread = ReplThread(self.repl, line_text)
+        thread = repl.ReplThread(self.repl, line_text)
         self.queue_thread(thread, next_start, is_last_line)
         thread.start()
 
@@ -61,26 +60,3 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             next_start += len(thread.result)
             if not is_last_line:
                 self.process_line(next_start)
-
-
-class ReplThread(threading.Thread):
-    def __init__(self, repl, str):
-        self.repl = repl
-        self.str = str
-        self.result = None
-        threading.Thread.__init__(self)
-
-    def run(self):
-        if not self.is_processable():
-            self.result = ''
-        else:
-            result = self.repl.correspond(self.str)
-            self.result = '\n'.join([
-                self.repl.prefix + line for line in result.split("\n")[:-1]
-            ]) + '\n'
-            if len(self.result.strip()) is 0:
-                self.result = ''
-
-    def is_processable(self):
-        return len(self.str.strip()) > 0
-
