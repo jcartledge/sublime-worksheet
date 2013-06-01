@@ -1,0 +1,19 @@
+{
+    "worksheet_languages": {
+        "JavaScript": {
+            "args": ["node", "-i"],
+            "prompt": ["> ", "... "],
+            "prefix": "// > "
+        },
+        "Python": {
+            "args": ["python", "-i"],
+            "prompt": [">>> ", "... "],
+            "prefix": "# > "
+        },
+        "Ruby": {
+            "args": "irb",
+            "prompt": "> ",
+            "prefix": "# > "
+        }
+    }
+}

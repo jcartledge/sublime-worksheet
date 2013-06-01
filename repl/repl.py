@@ -4,7 +4,7 @@ import fcntl
 import subprocess
 
 
-class IPopen(subprocess.Popen):
+class Repl(subprocess.Popen):
 
     POLL_INTERVAL = 0.01
 
@@ -13,11 +13,13 @@ class IPopen(subprocess.Popen):
         keyword_args = {
             'stdin': subprocess.PIPE,
             'stdout': subprocess.PIPE,
-            'stderr': subprocess.PIPE,
-            'prompt': ('> ', '... ')
+            'stderr': subprocess.PIPE
         }
         keyword_args.update(kwargs)
-        self.prompt = keyword_args.get('prompt')
+        self._child_created = False
+        self.prefix = keyword_args.get('prefix')
+        del keyword_args['prefix']
+        self.prompt = tuple(keyword_args.get('prompt'))
         del keyword_args['prompt']
         subprocess.Popen.__init__(self, *args, **keyword_args)
         # Make stderr and stdout non-blocking.
