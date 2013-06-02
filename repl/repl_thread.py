@@ -21,4 +21,3 @@ class ReplThread(threading.Thread):
 
     def is_processable(self):
         return len(self.str.strip()) > 0
-

@@ -1,70 +1,86 @@
 import sublime
 import sublime_plugin
 import repl
+import time
 
 
 class WorksheetCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        self.repl = self.get_repl()
+        self.settings = sublime.load_settings("worksheet.sublime-settings")
+        self.timeout = self.settings.get('worksheet_timeout')
+        self.repl = self.get_repl(self.get_language())
         if self.repl is not None:
             self.remove_previous_results()
             self.repl.correspond('')
             self.process_line(0)
 
-    def get_repl(self):
-        settings = sublime.load_settings("worksheet.sublime-settings")
-        languages = settings.get('worksheet_languages')
-        language = self.get_language()
-        if language in languages:
-            repl_settings = languages.get(language)
-            args = repl_settings.get('args')
-            del repl_settings['args']
-            return repl.Repl(args, **repl_settings)
-        else:
-            sublime.error_message('No worksheet REPL found for ' + language)
+    def get_repl(self, language):
+        repl_settings = self.settings.get('worksheet_languages').get(language)
+        if repl_settings is not None:
+            return repl.Repl(repl_settings.pop('args'), **repl_settings)
+        sublime.error_message('No worksheet REPL found for ' + language)
+
+    def close_repl(self):
+        self.repl.terminate()
 
     def get_language(self):
         return self.view.settings().get('syntax').split('/')[-1].split('.')[0]
 
     def remove_previous_results(self):
-        view = self.view
-        edit = view.begin_edit('remove_previous_results')
-        for region in reversed(view.find_all("^" + self.repl.prefix)):
-            view.erase(edit, view.full_line(region))
+        edit = self.view.begin_edit('remove_previous_results')
+        for region in reversed(self.view.find_all("^" + self.repl.prefix)):
+            self.view.erase(edit, self.view.full_line(region))
         self.view.end_edit(edit)
 
     def process_line(self, start):
-        view = self.view
-        line = view.full_line(start)
-        next_start = line.end()
-        line_text = view.substr(line)
-        is_last_line = "\n" not in line_text
-        if is_last_line:                        # this doesn't actually work
-            next_start += 1
-            line_text += "\n"
-        thread = repl.ReplThread(self.repl, line_text)
-        self.queue_thread(thread, next_start, is_last_line)
+        self.start_time = time.time()
+        line = self.view.full_line(start)
+        line_text = self.view.substr(line)
         self.set_status('Sending 1 line to %(language)s REPL.')
-        thread.start()
+        self.queue_thread(
+            repl.ReplThread(self.repl, line_text),
+            line.end(),
+            "\n" not in line_text
+        ).start()
 
     def queue_thread(self, thread, start, is_last_line):
         sublime.set_timeout(
             lambda: self.handle_thread(thread, start, is_last_line),
             100
         )
+        return thread
 
     def handle_thread(self, thread, next_start, is_last_line):
         if thread.is_alive():
+            self.handle_running_thread(thread, next_start, is_last_line)
+        else:
+            self.handle_finished_thread(thread, next_start, is_last_line)
+
+    def handle_running_thread(self, thread, next_start, is_last_line):
+        elapsed = time.time() - self.start_time
+        if elapsed > self.timeout:
+            self.handle_timeout(elapsed, next_start)
+        else:
             self.set_status('Waiting for %(language)s REPL.')
             self.queue_thread(thread, next_start, is_last_line)
+
+    def handle_finished_thread(self, thread, next_start, is_last_line):
+        self.set_status('')
+        self.insert(thread.result, next_start)
+        next_start += len(thread.result)
+        if not is_last_line:
+            self.process_line(next_start)
         else:
-            self.set_status('')
-            edit = self.view.begin_edit('process_line')
-            self.view.insert(edit, next_start, thread.result)
-            self.view.end_edit(edit)
-            next_start += len(thread.result)
-            if not is_last_line:
-                self.process_line(next_start)
+            self.close_repl()
+
+    def handle_timeout(self, elapsed, next_start):
+        self.insert(self.repl.prefix + 'TIMEOUT: %f\n' % elapsed, next_start)
+        self.close_repl()
+
+    def insert(self, str, start):
+        edit = self.view.begin_edit('process_line')
+        self.view.insert(edit, start, str)
+        self.view.end_edit(edit)
 
     def set_status(self, msg, key='worksheet'):
         self.view.set_status(key, msg % {'language': self.get_language()})

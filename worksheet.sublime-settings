@@ -1,4 +1,5 @@
 {
+    "worksheet_timeout": 2,
     "worksheet_languages": {
         "JavaScript": {
             "args": ["node", "-i"],
