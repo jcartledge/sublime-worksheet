@@ -3,6 +3,11 @@ import time
 import fcntl
 import subprocess
 
+"""
+Based on a blog post by Slawek Ligus:
+http://log.ooz.ie/2013/02/interactive-subprocess-communication-in.html
+"""
+
 
 class Repl(subprocess.Popen):
 
@@ -16,11 +21,8 @@ class Repl(subprocess.Popen):
             'stderr': subprocess.PIPE
         }
         keyword_args.update(kwargs)
-        self._child_created = False
-        self.prefix = keyword_args.get('prefix')
-        del keyword_args['prefix']
-        self.prompt = tuple(keyword_args.get('prompt'))
-        del keyword_args['prompt']
+        self.prefix = keyword_args.pop('prefix')
+        self.prompt = tuple(keyword_args.pop('prompt'))
         subprocess.Popen.__init__(self, *args, **keyword_args)
         # Make stderr and stdout non-blocking.
         for outfile in (self.stdout, self.stderr):
