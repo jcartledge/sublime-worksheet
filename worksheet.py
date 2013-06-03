@@ -1,7 +1,6 @@
 import sublime
 import sublime_plugin
 import repl
-import time
 
 
 class WorksheetCommand(sublime_plugin.TextCommand):
@@ -11,17 +10,16 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.repl = self.get_repl(self.get_language())
         if self.repl is not None:
             self.remove_previous_results()
-            self.repl.correspond('')
             self.process_line(0)
 
     def get_repl(self, language):
         repl_settings = self.settings.get('worksheet_languages').get(language)
         if repl_settings is not None:
-            return repl.Repl(repl_settings.pop('args'), **repl_settings)
+            return repl.Repl(repl_settings.pop('cmd'), **repl_settings)
         sublime.error_message('No worksheet REPL found for ' + language)
 
     def close_repl(self):
-        self.repl.terminate()
+        self.repl.close()
 
     def get_language(self):
         return self.view.settings().get('syntax').split('/')[-1].split('.')[0]
@@ -33,7 +31,6 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.view.end_edit(edit)
 
     def process_line(self, start):
-        self.start_time = time.time()
         line = self.view.full_line(start)
         line_text = self.view.substr(line)
         self.set_status('Sending 1 line to %(language)s REPL.')
@@ -57,12 +54,8 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             self.handle_finished_thread(thread, next_start, is_last_line)
 
     def handle_running_thread(self, thread, next_start, is_last_line):
-        elapsed = time.time() - self.start_time
-        if elapsed > self.timeout:
-            self.handle_timeout(elapsed, next_start)
-        else:
-            self.set_status('Waiting for %(language)s REPL.')
-            self.queue_thread(thread, next_start, is_last_line)
+        self.set_status('Waiting for %(language)s REPL.')
+        self.queue_thread(thread, next_start, is_last_line)
 
     def handle_finished_thread(self, thread, next_start, is_last_line):
         self.set_status('')
@@ -72,10 +65,6 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             self.process_line(next_start)
         else:
             self.close_repl()
-
-    def handle_timeout(self, elapsed, next_start):
-        self.insert(self.repl.prefix + 'TIMEOUT: %f\n' % elapsed, next_start)
-        self.close_repl()
 
     def insert(self, str, start):
         edit = self.view.begin_edit('process_line')

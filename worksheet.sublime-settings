@@ -1,18 +1,17 @@
 {
-    "worksheet_timeout": 2,
     "worksheet_languages": {
         "JavaScript": {
-            "args": ["node", "-i"],
-            "prompt": ["> ", "... "],
+            "cmd": "/usr/bin/env node -i",
+            "prompt": ["> ", "\\.\\.+ "],
             "prefix": "// > "
         },
         "Python": {
-            "args": ["python", "-i"],
-            "prompt": [">>> ", "... "],
+            "cmd": "/usr/bin/env python -i",
+            "prompt": [">>> ", "\\.\\.+ "],
             "prefix": "# > "
         },
         "Ruby": {
-            "args": "irb",
+            "cmd": "/usr/bin/env irb",
             "prompt": "> ",
             "prefix": "# > "
         }
