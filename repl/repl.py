@@ -7,7 +7,7 @@ class Repl():
         self.prefix = prefix
         self.repl = pexpect.spawn(cmd)
         self.prompt = self.repl.compile_pattern_list(prompt)
-        self.repl.timeout = 2
+        self.repl.timeout = 10
         self.repl.expect_list(self.prompt)
 
     def correspond(self, input):
