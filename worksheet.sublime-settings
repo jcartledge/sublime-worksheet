@@ -11,9 +11,9 @@
             "prefix": "# > "
         },
         "Ruby": {
-            "cmd": "/usr/bin/env irb",
-            "prompt": "> ",
-            "prefix": "# > "
+            "cmd": "/usr/bin/env irb --prompt simple",
+            "prompt": ">> ",
+            "prefix": "# "
         }
     }
 }
