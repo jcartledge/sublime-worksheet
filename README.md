@@ -1,6 +1,6 @@
 # Sublime Worksheet
 
-* * * **PRE-ALPHA** * * *
+\* * * **PRE-ALPHA** * * *
 
 This is a SublimeText 2 plugin which passes the contents of a buffer line-by-line to a REPL and displays the results inline.
 
