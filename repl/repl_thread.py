@@ -9,12 +9,6 @@ class ReplThread(threading.Thread):
         threading.Thread.__init__(self)
 
     def run(self):
-        if not self.is_processable():
+        self.result = self.repl.correspond(self.str)
+        if len(self.result.strip()) is 0:
             self.result = ''
-        else:
-            self.result = self.repl.correspond(self.str)
-            if len(self.result.strip()) is 0:
-                self.result = ''
-
-    def is_processable(self):
-        return len(self.str.strip()) > 0

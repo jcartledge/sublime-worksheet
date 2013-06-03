@@ -12,7 +12,7 @@
         },
         "Ruby": {
             "cmd": "/usr/bin/env irb --prompt simple",
-            "prompt": ">> ",
+            "prompt": [">> ", "\\?>"],
             "prefix": "# "
         }
     }
