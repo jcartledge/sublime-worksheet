@@ -1,4 +1,5 @@
 {
+    "worksheet_timeout": 10,
     "worksheet_languages": {
         "JavaScript": {
             "cmd": "/usr/bin/env node -i",

@@ -15,12 +15,12 @@ class ReplResult():
 
 
 class Repl():
-    def __init__(self, cmd, prompt, prefix):
+    def __init__(self, cmd, prompt, prefix, timeout=10):
         self.prefix = prefix
         self.repl = pexpect.spawn(cmd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
-        self.repl.timeout = 10
+        self.repl.timeout = timeout
         self.repl.expect_list(self.prompt)
 
     def correspond(self, input, is_last_line=False):

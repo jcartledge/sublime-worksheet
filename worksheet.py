@@ -15,6 +15,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
     def get_repl(self, language):
         repl_settings = self.settings.get('worksheet_languages').get(language)
         if repl_settings is not None:
+            repl_settings["timeout"] = self.settings.get("worksheet_timeout")
             return repl.Repl(repl_settings.pop('cmd'), **repl_settings)
         sublime.error_message('No worksheet REPL found for ' + language)
 
