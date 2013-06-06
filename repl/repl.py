@@ -14,6 +14,10 @@ class ReplResult():
         return self.text
 
 
+class ReplStartError(Exception):
+    pass
+
+
 class Repl():
     def __init__(self, cmd, prompt, prefix, timeout=10):
         self.prefix = prefix
@@ -21,7 +25,9 @@ class Repl():
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.repl.timeout = timeout
-        self.repl.expect_list(self.prompt)
+        index = self.repl.expect_list(self.prompt)
+        if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
+            raise ReplStartError(cmd)
 
     def correspond(self, input, is_last_line=False):
         prefix = self.prefix
@@ -30,13 +36,12 @@ class Repl():
             input += "\n"
         self.repl.send(input)
         index = self.repl.expect_list(self.prompt)
-        if index == 0:
+        if self.prompt[index] == pexpect.EOF:
             # EOF
             return ReplResult(is_eof=True)
-        elif index == 1:
+        elif self.prompt[index] == pexpect.TIMEOUT:
             # Timeout
-            return ReplResult(prefix + "Execution timed out.",
-                is_timeout=True)
+            return ReplResult(prefix + "Execution timed out.", is_timeout=True)
         else:
             # Regular prompt
             return ReplResult('\n'.join([
