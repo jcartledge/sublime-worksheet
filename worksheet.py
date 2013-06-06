@@ -34,10 +34,11 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         line = self.view.full_line(start)
         line_text = self.view.substr(line)
         self.set_status('Sending 1 line to %(language)s REPL.')
+        is_last_line = "\n" not in line_text
         self.queue_thread(
-            repl.ReplThread(self.repl, line_text),
+            repl.ReplThread(self.repl, line_text, is_last_line),
             line.end(),
-            "\n" not in line_text
+            is_last_line
         ).start()
 
     def queue_thread(self, thread, start, is_last_line):
@@ -58,17 +59,17 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.queue_thread(thread, next_start, is_last_line)
 
     def handle_finished_thread(self, thread, next_start, is_last_line):
-        self.set_status('')
         self.insert(thread.result, next_start)
         next_start += len(thread.result)
         if not is_last_line:
             self.process_line(next_start)
         else:
+            self.set_status('')
             self.close_repl()
 
-    def insert(self, str, start):
+    def insert(self, text, start):
         edit = self.view.begin_edit('process_line')
-        self.view.insert(edit, start, str)
+        self.view.insert(edit, start, str(text))
         self.view.end_edit(edit)
 
     def set_status(self, msg, key='worksheet'):
