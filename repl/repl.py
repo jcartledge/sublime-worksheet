@@ -2,6 +2,18 @@ import pexpect
 from ftfy import fix_text
 
 
+class ReplResult():
+    def __init__(self, text="", is_timeout=False, is_eof=False, is_last_line=False):
+        if len(text.strip()) > 0 and not is_last_line:
+            text += "\n"
+        self.text = text
+        self.is_timeout = is_timeout
+        self.is_eof = is_eof
+
+    def __str__(self):
+        return self.text
+
+
 class Repl():
     def __init__(self, cmd, prompt, prefix):
         self.prefix = prefix
@@ -20,20 +32,18 @@ class Repl():
         index = self.repl.expect_list(self.prompt)
         if index == 0:
             # EOF
-            result = ''
+            return ReplResult(is_eof=True)
         elif index == 1:
             # Timeout
-            result = prefix + "Execution timed out."
+            return ReplResult(prefix + "Execution timed out.",
+                is_timeout=True)
         else:
             # Regular prompt
-            result = '\n'.join([
+            return ReplResult('\n'.join([
                 prefix + line
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())
-            ][1:])
-        if len(result.strip()) > 0 and not is_last_line:
-            result += "\n"
-        return result
+            ][1:]))
 
     def close(self):
         self.repl.close()

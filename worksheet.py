@@ -59,9 +59,10 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.queue_thread(thread, next_start, is_last_line)
 
     def handle_finished_thread(self, thread, next_start, is_last_line):
-        self.insert(thread.result, next_start)
-        next_start += len(thread.result)
-        if not is_last_line:
+        result = thread.result
+        self.insert(result, next_start)
+        next_start += len(str(result))
+        if not (is_last_line or result.is_eof or result.is_timeout):
             self.process_line(next_start)
         else:
             self.set_status('')

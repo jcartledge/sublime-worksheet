@@ -11,5 +11,3 @@ class ReplThread(threading.Thread):
 
     def run(self):
         self.result = self.repl.correspond(self.str, self.is_last_line)
-        if len(self.result.strip()) is 0:
-            self.result = ''
