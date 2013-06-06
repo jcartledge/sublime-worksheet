@@ -19,9 +19,9 @@ class ReplStartError(Exception):
 
 
 class Repl():
-    def __init__(self, cmd, prompt, prefix, timeout=10):
+    def __init__(self, cmd, prompt, prefix, timeout=10, cwd=None):
         self.prefix = prefix
-        self.repl = pexpect.spawn(cmd)
+        self.repl = pexpect.spawn(cmd, timeout=timeout, cwd=cwd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.repl.timeout = timeout

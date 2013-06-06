@@ -1,6 +1,7 @@
 import sublime
 import sublime_plugin
 import repl
+import os
 
 
 class WorksheetCommand(sublime_plugin.TextCommand):
@@ -21,6 +22,8 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         repl_settings = self.settings.get("worksheet_languages").get(language)
         if repl_settings is not None:
             repl_settings["timeout"] = self.settings.get("worksheet_timeout")
+            if self.view.file_name() is not None:
+                repl_settings["cwd"] = os.path.dirname(self.view.file_name())
             return repl.Repl(repl_settings.pop("cmd"), **repl_settings)
         sublime.error_message("No worksheet REPL found for " + language)
 
