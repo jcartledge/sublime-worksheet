@@ -28,7 +28,10 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         sublime.error_message("No worksheet REPL found for " + language)
 
     def close_repl(self):
-        self.repl.close()
+        try:
+            self.repl.close()
+        except repl.ReplCloseError, e:
+            sublime.error_message("Could not close the REPL:\n" + e.message)
 
     def get_language(self):
         return self.view.settings().get("syntax").split('/')[-1].split('.')[0]
