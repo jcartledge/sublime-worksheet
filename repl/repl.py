@@ -17,6 +17,9 @@ class ReplResult():
 class ReplStartError(Exception):
     pass
 
+class ReplCloseError(Exception):
+    pass
+
 
 class Repl():
     def __init__(self, cmd, prompt, prefix, timeout=10, cwd=None):
@@ -50,5 +53,18 @@ class Repl():
                 if len(line.strip())
             ][1:]))
 
-    def close(self):
-        self.repl.close()
+    def close(self, tries=0, max_retries=3):
+        try:
+            # sometimes the process (*ahem* java) takes a little too long to
+            # close, so take 3 tries.
+            self.repl.close(force=True)
+        except pexpect.ExceptionPexpect, e:
+            # wasn't closed, try again
+            tries += 1
+            if tries >= max_retries:
+                raise ReplCloseError(e.message)
+            else:
+                self.close(tries, max_retries)
+        except OSError, e:
+            # Already closed - we're done.
+            pass
