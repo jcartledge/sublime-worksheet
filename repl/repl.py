@@ -38,7 +38,7 @@ class Repl():
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] == pexpect.EOF:
             # EOF
-            return ReplResult(is_eof=True)
+            return ReplResult(prefix + " EOF", is_eof=True)
         elif self.prompt[index] == pexpect.TIMEOUT:
             # Timeout
             return ReplResult(prefix + "Execution timed out.", is_timeout=True)
