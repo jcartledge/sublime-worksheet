@@ -1,32 +1,44 @@
 import pexpect
 from ftfy import fix_text
+import re
 
 
 class ReplResult():
-    def __init__(self, text="", is_timeout=False, is_eof=False, is_last_line=False):
+    def __init__(self, text="",
+                 is_timeout=False,
+                 is_eof=False,
+                 is_error=False,
+                 is_last_line=False):
         if len(text.strip()) > 0 and not is_last_line:
             text += "\n"
         self.text = text
         self.is_timeout = is_timeout
         self.is_eof = is_eof
+        self.is_error = is_error
 
     def __str__(self):
         return self.text
 
+    @property
+    def terminates(self):
+        return self.is_timeout or self.is_eof or self.is_error
+
 
 class ReplStartError(Exception):
     pass
+
 
 class ReplCloseError(Exception):
     pass
 
 
 class Repl():
-    def __init__(self, cmd, prompt, prefix, timeout=10, cwd=None):
-        self.prefix = prefix
+    def __init__(self, cmd, prompt, prefix, error=[], timeout=10, cwd=None):
         self.repl = pexpect.spawn(cmd, timeout=timeout, cwd=cwd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
+        self.prefix = prefix
+        self.error = map(lambda x: re.compile(prefix + x), error)
         self.repl.timeout = timeout
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
@@ -46,12 +58,19 @@ class Repl():
             # Timeout
             return ReplResult(prefix + "Execution timed out.", is_timeout=True)
         else:
-            # Regular prompt
-            return ReplResult('\n'.join([
+            # Regular prompt - need to check for error
+            result_str = '\n'.join([
                 prefix + line
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())
-            ][1:]))
+            ][1:])
+            return ReplResult(result_str, is_error=self.is_error(result_str))
+
+    def is_error(self, str):
+        return reduce(
+            lambda acc, pattern: acc or pattern.match(str) is not None,
+            self.error,
+            False)
 
     def close(self, tries=0, max_retries=3):
         try:

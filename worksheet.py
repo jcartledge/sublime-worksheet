@@ -74,7 +74,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         result = thread.result
         self.insert(result, next_start)
         next_start += len(str(result))
-        if not (is_last_line or result.is_eof or result.is_timeout):
+        if not (is_last_line or result.terminates):
             self.process_line(next_start)
         else:
             self.set_status('')

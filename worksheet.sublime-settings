@@ -2,24 +2,28 @@
     "worksheet_timeout": 10,
     "worksheet_languages": {
         "JavaScript": {
-            "cmd": "/usr/bin/env node -i",
+            "cmd": "node -i",
             "prompt": ["> ", "\\.\\.+ "],
-            "prefix": "// > "
+            "prefix": "// > ",
+            "error": ["[A-Z][a-z]+Error:"]
         },
         "Python": {
-            "cmd": "/usr/bin/env python -i",
+            "cmd": "python -i",
             "prompt": [">>> ", "\\.\\.+ "],
-            "prefix": "# > "
+            "prefix": "# > ",
+            "error": ["Traceback ", "  File \"<stdin>\","]
         },
         "Ruby": {
-            "cmd": "/usr/bin/env irb --prompt simple",
+            "cmd": "irb --prompt simple",
             "prompt": [">> ", "\\?>"],
-            "prefix": "# ="
+            "prefix": "# =",
+            "error": ["[A-Z][a-z]+Error:"]
         },
         "Scala": {
-            "cmd": "/usr/bin/env sbt console",
+            "cmd": "sbt console",
             "prompt": ["scala> ", "     \\| "],
-            "prefix": "// > "
+            "prefix": "// > ",
+            "error": ["<console>:[0-9]+: error:"]
         }
     }
 }
