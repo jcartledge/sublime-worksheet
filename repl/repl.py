@@ -1,4 +1,10 @@
-import pexpect
+try:
+    import pexpect
+    from pexpect import spawn
+except ImportError:
+    import winpexpect as pexpect
+    from winpexpect import winspawn as spawn
+
 from ftfy import fix_text
 import re
 
@@ -34,7 +40,7 @@ class ReplCloseError(Exception):
 
 class Repl():
     def __init__(self, cmd, prompt, prefix, error=[], timeout=10, cwd=None):
-        self.repl = pexpect.spawn(cmd, timeout=timeout, cwd=cwd)
+        self.repl = spawn(cmd, timeout=timeout, cwd=cwd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
