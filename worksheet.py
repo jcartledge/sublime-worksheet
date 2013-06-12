@@ -7,32 +7,20 @@ import os
 class WorksheetCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         self.settings = sublime.load_settings("worksheet.sublime-settings")
-        self.timeout = self.settings.get('worksheet_timeout')
+        self.timeout = self.settings.get("worksheet_timeout")
         try:
             language = self.get_language()
-            self.repl = self.get_repl(language)
-            self.remove_previous_results()
-            self.ensure_trailing_newline(edit)
-            self.process_line(0)
+            repl_def = self.settings.get("worksheet_languages").get(language)
+            repl_def["timeout"] = self.settings.get("worksheet_timeout")
+            filename = self.view.file_name()
+            if filename is not None:
+                repl_def["cwd"] = os.dirname(filename)
+            self.repl = repl.get_repl(language, repl_def)
         except repl.ReplStartError, e:
-            msg = "Could not start REPL for " + language + ".\n"
-            msg += "Tried: " + e.message
-            sublime.error_message(msg)
-
-    def get_repl(self, language):
-        repl_settings = self.settings.get("worksheet_languages").get(language)
-        if repl_settings is not None:
-            repl_settings["timeout"] = self.settings.get("worksheet_timeout")
-            if self.view.file_name() is not None:
-                repl_settings["cwd"] = os.path.dirname(self.view.file_name())
-            return repl.Repl(repl_settings.pop("cmd"), **repl_settings)
-        sublime.error_message("No worksheet REPL found for " + language)
-
-    def close_repl(self):
-        try:
-            self.repl.close()
-        except repl.ReplCloseError, e:
-            sublime.error_message("Could not close the REPL:\n" + e.message)
+            return sublime.error_message(e.msg)
+        self.remove_previous_results()
+        self.ensure_trailing_newline(edit)
+        self.process_line(0)
 
     def get_language(self):
         return self.view.settings().get("syntax").split('/')[-1].split('.')[0]
@@ -85,7 +73,11 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             self.process_line(next_start)
         else:
             self.set_status('')
-            self.close_repl()
+            try:
+                self.repl.close()
+            except repl.ReplCloseError, e:
+                sublime.error_message(
+                    "Could not close the REPL:\n" + e.message)
 
     def insert(self, text, start):
         edit = self.view.begin_edit("process_line")

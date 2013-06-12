@@ -3,6 +3,12 @@ from ftfy import fix_text
 import re
 
 
+def get_repl(language, repl_def):
+    if repl_def.get("cmd") is not None:
+        return Repl(repl_def.pop("cmd"), **repl_def)
+    raise ReplStartError("No worksheet REPL found for " + language)
+
+
 class ReplResult():
     def __init__(self, text="",
                  is_timeout=False,
@@ -42,7 +48,7 @@ class Repl():
         self.repl.timeout = timeout
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
-            raise ReplStartError(cmd)
+            raise ReplStartError("Could not start " + cmd)
 
     def correspond(self, input, is_last_line=False):
         prefix = self.prefix
