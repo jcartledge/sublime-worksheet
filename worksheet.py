@@ -12,6 +12,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             language = self.get_language()
             self.repl = self.get_repl(language)
             self.remove_previous_results()
+            self.ensure_trailing_newline(edit)
             self.process_line(0)
         except repl.ReplStartError, e:
             msg = "Could not start REPL for " + language + ".\n"
@@ -41,6 +42,12 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         for region in reversed(self.view.find_all("^" + self.repl.prefix)):
             self.view.erase(edit, self.view.full_line(region))
         self.view.end_edit(edit)
+
+    def ensure_trailing_newline(self, edit):
+        eof = self.view.size()
+        nl = u'\n'
+        if self.view.substr(eof - 1) is not nl:
+            self.view.insert(edit, eof, nl)
 
     def process_line(self, start):
         line = self.view.full_line(start)

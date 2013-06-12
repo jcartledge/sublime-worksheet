@@ -46,9 +46,6 @@ class Repl():
 
     def correspond(self, input, is_last_line=False):
         prefix = self.prefix
-        if is_last_line:
-            prefix = "\n" + prefix
-            input += "\n"
         self.repl.send(input)
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] == pexpect.EOF:
