@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.2",
+  "packages": [
+    {
+      "name": "Worksheet",
+      "description": "Passes the contents of a buffer line-by-line to a REPL and displays the results inline. Built-in support for Python, JavaScript, Ruby and Scala with more to come.",
+      "author": "jcartledge",
+      "homepage": "https://github.com/jcartledge/sublime-worksheet",
+      "last_modified": "2013-06-07 16:35:00 +1000",
+      "platforms": {
+        "osx": [
+          {
+            "version": "0.5.0",
+            "url": "https://nodeload.github.com/jcartledge/sublime-worksheet/zip/0.5.0"
+          }
+        ],
+        "linux": [
+          {
+            "version": "0.5.0",
+            "url": "https://nodeload.github.com/jcartledge/sublime-worksheet/zip/0.5.0"
+          }
+        ]
+      }
+    }
+  ]
+}
