@@ -13,9 +13,8 @@ class ReplResult():
     def __init__(self, text="",
                  is_timeout=False,
                  is_eof=False,
-                 is_error=False,
-                 is_last_line=False):
-        if len(text.strip()) > 0 and not is_last_line:
+                 is_error=False):
+        if len(text.strip()) > 0:
             text += "\n"
         self.text = text
         self.is_timeout = is_timeout
@@ -50,7 +49,7 @@ class Repl():
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
             raise ReplStartError("Could not start " + cmd)
 
-    def correspond(self, input, is_last_line=False):
+    def correspond(self, input):
         prefix = self.prefix
         self.repl.send(input)
         index = self.repl.expect_list(self.prompt)
@@ -62,7 +61,7 @@ class Repl():
             return ReplResult(prefix + "Execution timed out.", is_timeout=True)
         else:
             # Regular prompt - need to check for error
-            result_str = '\n'.join([
+            result_str = "\n".join([
                 prefix + line
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())

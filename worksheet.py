@@ -10,14 +10,15 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.timeout = self.settings.get("worksheet_timeout")
         try:
             language = self.get_language()
-            repl_def = self.settings.get("worksheet_languages").get(language)
+            repl_def = self.settings.get("worksheet_languages").get(
+                language, {})
             repl_def["timeout"] = self.settings.get("worksheet_timeout")
             filename = self.view.file_name()
             if filename is not None:
                 repl_def["cwd"] = os.dirname(filename)
             self.repl = repl.get_repl(language, repl_def)
         except repl.ReplStartError, e:
-            return sublime.error_message(e.msg)
+            return sublime.error_message(e.message)
         self.remove_previous_results()
         self.ensure_trailing_newline(edit)
         self.process_line(0)
@@ -33,51 +34,48 @@ class WorksheetCommand(sublime_plugin.TextCommand):
 
     def ensure_trailing_newline(self, edit):
         eof = self.view.size()
-        nl = u'\n'
-        if self.view.substr(eof - 1) is not nl:
-            self.view.insert(edit, eof, nl)
+        if len(self.view.substr(self.view.line(eof)).strip()) is not 0:
+            self.view.insert(edit, eof, "\n")
 
     def process_line(self, start):
         line = self.view.full_line(start)
         line_text = self.view.substr(line)
-        self.set_status("Sending 1 line to %(language)s REPL.")
-        is_last_line = "\n" not in line_text
-        self.queue_thread(
-            repl.ReplThread(self.repl, line_text, is_last_line),
-            line.end(),
-            is_last_line
-        ).start()
+        if "\n" in line_text:
+            self.view.add_regions("worksheet", list([line]), "string")
+            self.set_status("Sending 1 line to %(language)s REPL.")
+            self.queue_thread(
+                repl.ReplThread(self.repl, line_text),
+                line.end(),
+            ).start()
+        else:
+            self.cleanup()
 
-    def queue_thread(self, thread, start, is_last_line):
+    def queue_thread(self, thread, start):
         sublime.set_timeout(
-            lambda: self.handle_thread(thread, start, is_last_line),
+            lambda: self.handle_thread(thread, start),
             100
         )
         return thread
 
-    def handle_thread(self, thread, next_start, is_last_line):
+    def handle_thread(self, thread, next_start):
         if thread.is_alive():
-            self.handle_running_thread(thread, next_start, is_last_line)
+            self.handle_running_thread(thread, next_start)
         else:
-            self.handle_finished_thread(thread, next_start, is_last_line)
+            self.handle_finished_thread(thread, next_start)
 
-    def handle_running_thread(self, thread, next_start, is_last_line):
+    def handle_running_thread(self, thread, next_start):
         self.set_status("Waiting for %(language)s REPL.")
-        self.queue_thread(thread, next_start, is_last_line)
+        self.queue_thread(thread, next_start)
 
-    def handle_finished_thread(self, thread, next_start, is_last_line):
+    def handle_finished_thread(self, thread, next_start):
+        self.view.add_regions("worksheet", list(), "string")
         result = thread.result
         self.insert(result, next_start)
         next_start += len(str(result))
-        if not (is_last_line or result.terminates):
+        if not result.terminates:
             self.process_line(next_start)
         else:
-            self.set_status('')
-            try:
-                self.repl.close()
-            except repl.ReplCloseError, e:
-                sublime.error_message(
-                    "Could not close the REPL:\n" + e.message)
+            self.cleanup()
 
     def insert(self, text, start):
         edit = self.view.begin_edit("process_line")
@@ -86,3 +84,11 @@ class WorksheetCommand(sublime_plugin.TextCommand):
 
     def set_status(self, msg, key="worksheet"):
         self.view.set_status(key, msg % {"language": self.get_language()})
+
+    def cleanup(self):
+        self.set_status('')
+        try:
+            self.repl.close()
+        except repl.ReplCloseError, e:
+            sublime.error_message(
+                "Could not close the REPL:\n" + e.message)
