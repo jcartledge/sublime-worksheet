@@ -12,8 +12,8 @@
         },
         "PHP": {
             "cmd": "php -a",
-            "prompt": ["php > ", "php { "],
-            "error": ["PHP Parse error:"],
+            "prompt": ["(php|>>>) [>{\\('\"] "],
+            "error": ["PHP Parse error:", "PHP Fatal error"],
             "ignore": ["<\\?php", "\\?>"]
         },
         "Python": {

@@ -56,10 +56,7 @@ class Repl():
         prefix = self.prefix
         self.repl.send(input)
         index = self.repl.expect_list(self.prompt)
-        if self.prompt[index] == pexpect.EOF:
-            # EOF
-            return ReplResult(prefix + " EOF", is_eof=True)
-        elif self.prompt[index] == pexpect.TIMEOUT:
+        if self.prompt[index] == pexpect.TIMEOUT:
             # Timeout
             return ReplResult(prefix + "Execution timed out.", is_timeout=True)
         else:
@@ -69,7 +66,12 @@ class Repl():
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())
             ][1:])
-            return ReplResult(result_str, is_error=self.is_error(result_str))
+            is_eof = self.prompt[index] == pexpect.EOF
+            if is_eof:
+                result_str = "\n".join([result_str, prefix + " [exit]"])
+            return ReplResult(result_str,
+                              is_error=self.is_error(result_str),
+                              is_eof=is_eof)
 
     def should_ignore(self, str):
         return self._match_one(self.ignore, str)
