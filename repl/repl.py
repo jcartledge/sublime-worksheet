@@ -38,18 +38,21 @@ class ReplCloseError(Exception):
 
 
 class Repl():
-    def __init__(self, cmd, prompt, prefix, error=[], timeout=10, cwd=None):
+    def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None):
         self.repl = pexpect.spawn(cmd, timeout=timeout, cwd=cwd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
         self.error = map(lambda x: re.compile(prefix + x), error)
+        self.ignore = map(lambda x: re.compile(x), ignore)
         self.repl.timeout = timeout
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
             raise ReplStartError("Could not start " + cmd)
 
     def correspond(self, input):
+        if self.should_ignore(input):
+            return ReplResult()
         prefix = self.prefix
         self.repl.send(input)
         index = self.repl.expect_list(self.prompt)
@@ -68,11 +71,16 @@ class Repl():
             ][1:])
             return ReplResult(result_str, is_error=self.is_error(result_str))
 
+    def should_ignore(self, str):
+        return self._match_one(self.ignore, str)
+
     def is_error(self, str):
+        return self._match_one(self.error, str)
+
+    def _match_one(self, regexes, str):
         return reduce(
             lambda acc, pattern: acc or pattern.match(str) is not None,
-            self.error,
-            False)
+            regexes, False)
 
     def close(self, tries=0, max_retries=3):
         try:

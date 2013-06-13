@@ -10,9 +10,10 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.timeout = self.settings.get("worksheet_timeout")
         try:
             language = self.get_language()
-            repl_def = self.settings.get("worksheet_languages").get(
-                language, {})
-            repl_def["timeout"] = self.settings.get("worksheet_timeout")
+            default_def = self.settings.get("worksheet_defaults")
+            repl_defs = self.settings.get("worksheet_languages")
+            repl_def = dict(
+                default_def.items() + repl_defs.get(language, {}).items())
             filename = self.view.file_name()
             if filename is not None:
                 repl_def["cwd"] = os.dirname(filename)

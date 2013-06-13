@@ -1,11 +1,20 @@
 {
-    "worksheet_timeout": 10,
+    "worksheet_defaults": {
+        "timeout": 10,
+        "ignore": [],
+        "prefix": "// > ",
+        "error": ["[A-Z][a-z]+Error:"]
+    },
     "worksheet_languages": {
         "JavaScript": {
             "cmd": "node -i",
-            "prompt": ["> ", "\\.\\.+ "],
-            "prefix": "// > ",
-            "error": ["[A-Z][a-z]+Error:"]
+            "prompt": ["> ", "\\.\\.+ "]
+        },
+        "PHP": {
+            "cmd": "php -a",
+            "prompt": ["php > ", "php { "],
+            "error": ["PHP Parse error:"],
+            "ignore": ["<\\?php", "\\?>"]
         },
         "Python": {
             "cmd": "python -i",
@@ -16,13 +25,11 @@
         "Ruby": {
             "cmd": "irb --prompt simple",
             "prompt": [">> ", "\\?>"],
-            "prefix": "# =",
-            "error": ["[A-Z][a-z]+Error:"]
+            "prefix": "# ="
         },
         "Scala": {
             "cmd": "sbt console",
             "prompt": ["scala> ", "     \\| "],
-            "prefix": "// > ",
             "error": ["<console>:[0-9]+: error:"]
         }
     }
