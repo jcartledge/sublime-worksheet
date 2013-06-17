@@ -10,14 +10,14 @@
       "platforms": {
         "osx": [
           {
-            "version": "0.6.0",
-            "url": "https://nodeload.github.com/jcartledge/sublime-worksheet/zip/0.6.0"
+            "version": "0.6.1",
+            "url": "https://nodeload.github.com/jcartledge/sublime-worksheet/zip/0.6.1"
           }
         ],
         "linux": [
           {
-            "version": "0.6.0",
-            "url": "https://nodeload.github.com/jcartledge/sublime-worksheet/zip/0.6.0"
+            "version": "0.6.1",
+            "url": "https://nodeload.github.com/jcartledge/sublime-worksheet/zip/0.6.1"
           }
         ]
       }
