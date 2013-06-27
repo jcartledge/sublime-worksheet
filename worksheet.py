@@ -6,8 +6,7 @@ from os import path
 
 class WorksheetCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        self.settings = sublime.load_settings("worksheet.sublime-settings")
-        self.timeout = self.settings.get("worksheet_timeout")
+        self.load_settings()
         try:
             language = self.get_language()
             default_def = self.settings.get("worksheet_defaults")
@@ -21,8 +20,10 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         except repl.ReplStartError, e:
             return sublime.error_message(e.message)
         self.remove_previous_results()
-        self.ensure_trailing_newline(edit)
-        self.process_line(0)
+
+    def load_settings(self):
+        self.settings = sublime.load_settings("worksheet.sublime-settings")
+        self.timeout = self.settings.get("worksheet_timeout")
 
     def get_language(self):
         return self.view.settings().get("syntax").split('/')[-1].split('.')[0]
@@ -93,3 +94,15 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         except repl.ReplCloseError, e:
             sublime.error_message(
                 "Could not close the REPL:\n" + e.message)
+
+
+class WorksheetEvalCommand(WorksheetCommand):
+    def run(self, edit):
+        WorksheetCommand.run(self, edit)
+        self.ensure_trailing_newline(edit)
+        self.process_line(0)
+
+
+class WorksheetClearCommand(WorksheetCommand):
+    def run(self, edit):
+        WorksheetCommand.run(self, edit)

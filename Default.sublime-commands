@@ -1,6 +1,10 @@
 [
     {
         "caption": "Worksheet: Evaluate worksheet",
-        "command": "worksheet"
+        "command": "worksheet_eval"
+    },
+    {
+        "caption": "Worksheet: Clear previous results",
+        "command": "worksheet_clear"
     }
 ]
