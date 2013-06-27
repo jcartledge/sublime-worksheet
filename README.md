@@ -40,13 +40,21 @@ Copy the folder to your SublimeText 2 Packages directory.
 
 ## Usage
 
-Sublime Worksheet provides a single command, `Evaluate worksheet`, which you can access from the command palette (<kbd>CMD-SHIFT-P</kbd> / <kbd>CTRL-SHIFT-P</kbd>).
+Sublime Worksheet provides two commands which you can access from the command palette (<kbd>CMD-SHIFT-P</kbd> / <kbd>CTRL-SHIFT-P</kbd>):
 
-The syntax setting of the current document is used to determine which interpreter to run, so make sure this is set correctly.
+### `Worksheet: Evaluate worksheet`
+
+Passes the contents of the current document line by line to the interpreter which matches its syntax setting.
+
+Results are inserted as comments directly below the statement, as they would appear if you were enteringthe in the REPL.
 
 You don't need to save the document before running `Evaluate worksheet`, but if it has been saved then imports/requires/includes relative to the file should work.
 
 Any errors or timeouts will cause evaluation to stop and the error to be writtn to the document. A timeout occurs if the REPL hasn't returned a result for an evaluated line after 10 seconds.
+
+### `Worksheet: Clear worksheet results`
+
+Removes comments inserted by evaluating the worksheet.
 
 ## Contributing
 
