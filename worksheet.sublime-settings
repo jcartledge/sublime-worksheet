@@ -7,8 +7,8 @@
     },
     "worksheet_languages": {
         "JavaScript": {
-            "cmd": "node -i",
-            "prompt": ["> ", "\\.\\.+ "]
+            "cmd": "node -e \"require('repl').start('node> ')\"",
+            "prompt": ["node> ", "\\.\\.+ "]
         },
         "PHP": {
             "cmd": "php -a",
