@@ -46,11 +46,13 @@ Sublime Worksheet provides two commands which you can access from the command pa
 
 Passes the contents of the current document line by line to the interpreter which matches its syntax setting.
 
-Results are inserted as comments directly below the statement, as they would appear if you were enteringthe in the REPL.
+Results are inserted as comments directly below the statement, as they would appear if you were entering them in the REPL.
 
-You don't need to save the document before running `Evaluate worksheet`, but if it has been saved then imports/requires/includes relative to the file should work.
+This automatically clears the results of previous evaluations first.
 
-Any errors or timeouts will cause evaluation to stop and the error to be writtn to the document. A timeout occurs if the REPL hasn't returned a result for an evaluated line after 10 seconds.
+You don't need to save the document before running `Evaluate worksheet`, but if it has been saved then you can write imports/requires/includes relative to the file and they should work.
+
+Any errors or timeouts will cause evaluation to stop and the error to be written to the document. A timeout occurs if the REPL hasn't returned a result for an evaluated line after 10 seconds.
 
 ### `Worksheet: Clear worksheet results`
 
