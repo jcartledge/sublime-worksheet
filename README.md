@@ -24,7 +24,9 @@ Sublime Worksheet uses the interpreters that are available on your system. This 
 
 ### Package Control
 
-Sublime Worksheet isn't available in Package Control yet, but it should be soon. In the meantime you'll have to install it manually using one of the methods below:
+[Package Control](http://wbond.net/sublime_packages/package_control) is "a full-featured package manager that helps discovering, installing, updating and removing packages for SublimeText 2." It's the preferred way to manage your SublimeText 2 Packages directory.
+
+[Follow these instructions](http://wbond.net/sublime_packages/package_control/usage) to install Sublime-worksheet with Package Control.
 
 ### Using Git
 
