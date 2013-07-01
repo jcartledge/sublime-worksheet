@@ -16,7 +16,8 @@ Sublime worksheet currently supports the following languages:
  - PHP
  - Python
  - Ruby
- - Scala
+ - Scala (still a bit buggy)
+ - Scheme / Racket (still a bit buggy)
 
 Sublime Worksheet uses the interpreters that are available on your system. This means that, for example, you need the IRB executable installed and on your path in order to evaluate Ruby worksheets. If you can run a REPL from the command line then the plugin should have no problem running it.
 
