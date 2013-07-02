@@ -12,11 +12,11 @@ It's great for trying things out directly in Sublime Text.
 
 Sublime worksheet currently supports the following languages:
 
- - JavaScript (using the NodeJS REPL)
+ - JavaScript (using NodeJS)
  - PHP
  - Python
  - Ruby
- - Scala (still a bit buggy)
+ - Scala
 
 Sublime Worksheet uses the interpreters that are available on your system. This means that, for example, you need the IRB executable installed and on your path in order to evaluate Ruby worksheets. If you can run a REPL from the command line then the plugin should have no problem running it.
 
@@ -59,6 +59,16 @@ Any errors or timeouts will cause evaluation to stop and the error to be written
 ### `Worksheet: Clear worksheet results`
 
 Removes comments inserted by evaluating the worksheet.
+
+## Known issues
+
+### Python IndentationError
+
+There is an issue where code which is interpreted correctly by non-interactive Python causes an indentation error in interactive Python.
+
+This arises when indented lines are separated by one or more unindented blank lines. The simple workaround is to indent the blank lines to the level of the surrounding indentation.
+
+For more information see [this issue](https://github.com/jcartledge/sublime-worksheet/issues/23) or [this StackOverflow thread](http://stackoverflow.com/questions/2727988/python-indentation-in-empty-lines).
 
 ## Contributing
 
