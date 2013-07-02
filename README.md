@@ -72,7 +72,7 @@ For more information see [this issue](https://github.com/jcartledge/sublime-work
 
 ## Contributing
 
-Please feel free. More REPLs would be great - take a look at [worksheet.sublime-settings](worksheet.sublime-settings) for details of how these are implemented.
+Please feel free. More REPLs would be great - take a look at [worksheet.sublime-settings](worksheet.sublime-settings) (and [this pull request](https://github.com/jcartledge/sublime-worksheet/pull/22)) for details of how these are implemented.
 
 
 
