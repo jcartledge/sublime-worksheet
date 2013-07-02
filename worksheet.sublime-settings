@@ -22,6 +22,13 @@
             "prefix": "# > ",
             "error": ["Traceback ", "  File \"<stdin>\","]
         },
+        "Racket": {
+            "cmd": "guile",
+            "prompt": ["guile>"],
+            "prefix": ";; > ",
+            "error": ["ERROR:"],
+            "ignore": ["^[\\s]*\n", "^[\\s]*;;"]
+        },
         "Ruby": {
             "cmd": "irb --prompt simple",
             "prompt": [">> ", "\\?>"],
@@ -31,13 +38,6 @@
             "cmd": "scala",
             "prompt": ["scala> ", "     \\| "],
             "error": ["<console>:[0-9]+: error:"]
-        },
-        "Racket": {
-            "cmd": "guile",
-            "prompt": "guile>",
-            "prefix": ";; ",
-            "error": "ERROR:",
-            "ignore": "^\n"
         }
     }
 }
