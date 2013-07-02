@@ -17,6 +17,7 @@ try:
 except AttributeError:
     sublime.edit_storage = {}
 
+
 class EditStep:
     def __init__(self, cmd, *args):
         self.cmd = cmd
