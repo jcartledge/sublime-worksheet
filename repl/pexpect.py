@@ -69,7 +69,6 @@ try:
     import string
     import re
     import struct
-    import resource
     import types
     import pty
     import tty
@@ -80,9 +79,13 @@ try:
     import signal
 except ImportError, e:
     raise ImportError (str(e) + """
-
 A critical module was not found. Probably this operating system does not
 support it. Pexpect is intended for UNIX-like operating systems.""")
+try:
+    # Linux ST2 doesn't package the resource module so ... uh ...
+    import resource
+except:
+    pass
 
 __version__ = '2.3'
 __revision__ = '$Revision: 399 $'
@@ -541,7 +544,10 @@ class spawn (object):
                 # This is a serious limitation, but not a show stopper.
                 pass
             # Do not allow child to inherit open file descriptors from parent.
-            max_fd = resource.getrlimit(resource.RLIMIT_NOFILE)[0]
+            try:
+                max_fd = resource.getrlimit(resource.RLIMIT_NOFILE)[0]
+            except:
+                max_fd = int(os.popen("ulimit -Sn").read().strip())
             for i in range (3, max_fd):
                 try:
                     os.close (i)
