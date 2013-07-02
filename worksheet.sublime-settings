@@ -35,6 +35,7 @@
         "Racket": {
             "cmd": "guile",
             "prompt": "guile>",
+            "prefix": ";; ",
             "error": "ERROR:",
             "ignore": "^\n"
         }
