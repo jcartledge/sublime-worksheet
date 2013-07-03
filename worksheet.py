@@ -1,7 +1,12 @@
 import sys
 import sublime
 import sublime_plugin
-from os import path
+import os
+
+# Make sure /usr/local/bin is on the path
+exec_path = os.getenv('PATH', '')
+if not "/usr/local/bin" in exec_path:
+    os.environ["PATH"] = exec_path + os.pathsep + "/usr/local/bin"
 
 PY3K = sys.version_info >= (3, 0, 0)
 
@@ -93,7 +98,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
                 list(default_def.items()) + list(repl_defs.get(language, {}).items()))
             filename = self.view.file_name()
             if filename is not None:
-                repl_def["cwd"] = path.dirname(filename)
+                repl_def["cwd"] = os.path.dirname(filename)
             self.repl = repl.get_repl(language, repl_def)
         except repl.ReplStartError as e:
             return sublime.error_message(e.message)
