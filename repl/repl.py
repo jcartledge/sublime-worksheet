@@ -1,6 +1,13 @@
-import pexpect
-from ftfy import fix_text
 import re
+from functools import reduce
+
+from . import PY3K
+from . import pexpect
+from .ftfy import fix_text
+
+
+if PY3K:
+    unicode = str
 
 
 def get_repl(language, repl_def):
@@ -43,8 +50,8 @@ class Repl():
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
-        self.error = map(lambda x: re.compile(prefix + x), error)
-        self.ignore = map(lambda x: re.compile(x), ignore)
+        self.error = [re.compile(prefix + x) for x in error]
+        self.ignore = [re.compile(x) for x in ignore]
         self.repl.timeout = timeout
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
@@ -89,13 +96,13 @@ class Repl():
             # sometimes the process (*ahem* java) takes a little too long to
             # close, so take 3 tries.
             self.repl.close(force=True)
-        except pexpect.ExceptionPexpect, e:
+        except pexpect.ExceptionPexpect as e:
             # wasn't closed, try again
             tries += 1
             if tries >= max_retries:
                 raise ReplCloseError(e.message)
             else:
                 self.close(tries, max_retries)
-        except OSError, e:
+        except OSError as e:
             # Already closed - we're done.
             pass

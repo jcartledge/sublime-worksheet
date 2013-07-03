@@ -1,7 +1,85 @@
+import sys
 import sublime
 import sublime_plugin
-import repl
 from os import path
+
+PY3K = sys.version_info >= (3, 0, 0)
+
+if PY3K:
+    from . import repl
+else:
+    import repl
+
+
+# Borrowed from SublimeXiKi(https://github.com/lunixbochs/SublimeXiki/blob/st3/edit.py)
+try:
+    sublime.edit_storage
+except AttributeError:
+    sublime.edit_storage = {}
+
+
+class EditStep:
+    def __init__(self, cmd, *args):
+        self.cmd = cmd
+        self.args = args
+
+    def run(self, view, edit):
+        if self.cmd == 'callback':
+            return self.args[0](view, edit)
+
+        funcs = {
+            'insert': view.insert,
+            'erase': view.erase,
+            'replace': view.replace,
+        }
+        func = funcs.get(self.cmd)
+        if func:
+            func(edit, *self.args)
+
+
+class Edit:
+    def __init__(self, view):
+        self.view = view
+        self.steps = []
+
+    def step(self, cmd, *args):
+        step = EditStep(cmd, *args)
+        self.steps.append(step)
+
+    def insert(self, point, string):
+        self.step('insert', point, string)
+
+    def erase(self, region):
+        self.step('erase', region)
+
+    def replace(self, region, string):
+        self.step('replace', region, string)
+
+    def callback(self, func):
+        self.step('callback', func)
+
+    def run(self, view, edit):
+        for step in self.steps:
+            step.run(view, edit)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, type, value, traceback):
+        view = self.view
+        if not PY3K:
+            edit = view.begin_edit()
+            self.run(view, edit)
+            view.end_edit(edit)
+        else:
+            key = str(hash(tuple(self.steps)))
+            sublime.edit_storage[key] = self.run
+            view.run_command('worksheet_apply_edit', {'key': key})
+
+
+class WorksheetApplyEditCommand(sublime_plugin.TextCommand):
+    def run(self, edit, key):
+        sublime.edit_storage.pop(key)(self.view, edit)
 
 
 class WorksheetCommand(sublime_plugin.TextCommand):
@@ -12,14 +90,14 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             default_def = self.settings.get("worksheet_defaults")
             repl_defs = self.settings.get("worksheet_languages")
             repl_def = dict(
-                default_def.items() + repl_defs.get(language, {}).items())
+                list(default_def.items()) + list(repl_defs.get(language, {}).items()))
             filename = self.view.file_name()
             if filename is not None:
                 repl_def["cwd"] = path.dirname(filename)
             self.repl = repl.get_repl(language, repl_def)
-        except repl.ReplStartError, e:
+        except repl.ReplStartError as e:
             return sublime.error_message(e.message)
-        self.remove_previous_results()
+        self.remove_previous_results(edit)
 
     def load_settings(self):
         self.settings = sublime.load_settings("worksheet.sublime-settings")
@@ -28,11 +106,13 @@ class WorksheetCommand(sublime_plugin.TextCommand):
     def get_language(self):
         return self.view.settings().get("syntax").split('/')[-1].split('.')[0]
 
-    def remove_previous_results(self):
-        edit = self.view.begin_edit("remove_previous_results")
+    def remove_previous_results(self, edit):
+        if not PY3K:
+            edit = self.view.begin_edit("remove_previous_results")
         for region in reversed(self.view.find_all("^" + self.repl.prefix)):
             self.view.erase(edit, self.view.full_line(region))
-        self.view.end_edit(edit)
+        if not PY3K:
+            self.view.end_edit(edit)
 
     def ensure_trailing_newline(self, edit):
         eof = self.view.size()
@@ -80,9 +160,8 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             self.cleanup()
 
     def insert(self, text, start):
-        edit = self.view.begin_edit("process_line")
-        self.view.insert(edit, start, str(text))
-        self.view.end_edit(edit)
+        with Edit(self.view) as edit:
+            edit.insert(start, str(text))
 
     def set_status(self, msg, key="worksheet"):
         self.view.set_status(key, msg % {"language": self.get_language()})
@@ -91,7 +170,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.set_status('')
         try:
             self.repl.close()
-        except repl.ReplCloseError, e:
+        except repl.ReplCloseError as e:
             sublime.error_message(
                 "Could not close the REPL:\n" + e.message)
 
