@@ -14,8 +14,12 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             repl_def = dict(
                 default_def.items() + repl_defs.get(language, {}).items())
             filename = self.view.file_name()
-            if filename is not None:
-                repl_def["cwd"] = path.dirname(filename)
+            if repl_def["cwd"] == "package_base":
+                repl_def["cwd"] = sublime.packages_path() + "/Worksheet"
+            elif repl_def["cwd"] is None:
+                filename = self.view.file_name()
+                if filename is not None:
+                    repl_def["cwd"] = path.dirname(filename)
             self.repl = repl.get_repl(language, repl_def)
         except repl.ReplStartError, e:
             return sublime.error_message(e.message)
