@@ -1,7 +1,12 @@
 import sublime
 import sublime_plugin
 import repl
-from os import path
+import os
+
+# Make sure /usr/local/bin is on the path
+exec_path = os.getenv('PATH', '')
+if not "/usr/local/bin" in exec_path:
+    os.environ["PATH"] = exec_path + os.pathsep + "/usr/local/bin"
 
 
 class WorksheetCommand(sublime_plugin.TextCommand):
@@ -15,7 +20,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
                 default_def.items() + repl_defs.get(language, {}).items())
             filename = self.view.file_name()
             if filename is not None:
-                repl_def["cwd"] = path.dirname(filename)
+                repl_def["cwd"] = os.path.dirname(filename)
             self.repl = repl.get_repl(language, repl_def)
         except repl.ReplStartError, e:
             return sublime.error_message(e.message)
