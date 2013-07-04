@@ -1,6 +1,8 @@
 # Sublime Worksheet
 
-This is a Sublime Text 2 plugin for Mac OS X and Linux which passes the contents of a buffer line-by-line to a REPL and displays the results inline.
+This is a Sublime Text plugin for Mac OS X and Linux which passes the contents of a buffer line-by-line to a REPL and displays the results inline.
+
+It works in Sublime Text 2 and 3.
 
 ![a](docs/worksheet.gif)
 
@@ -8,20 +10,15 @@ It's great for trying things out directly in Sublime Text.
 
 **Please note: this plugin does not work on Windows.** See [this issue](https://github.com/jcartledge/sublime-worksheet/issues/12) for more information.
 
-## Languages
+## In this document
 
-Sublime worksheet currently supports the following languages:
+ - [Installation](#installation)
+ - [Usage](#usage)
+ - [Supported languages](#languages)
+ - [Known issues](#issues)
+ - [Contributing](#contributing)
 
- - JavaScript (using NodeJS)
- - PHP
- - Python
- - Ruby
- - Scala (still a bit buggy)
- - Scheme / Racket (still a bit buggy)
-
-Sublime Worksheet uses the interpreters that are available on your system. This means that, for example, you need the IRB executable installed and on your path in order to evaluate Ruby worksheets. If you can run a REPL from the command line then the plugin should have no problem running it.
-
-## Install
+## <a id="installation"></a>Installation
 
 ### Package Control
 
@@ -41,7 +38,7 @@ Download the files using the .zip download option.
 Unzip the files.  
 Copy the folder to your SublimeText 2 Packages directory.
 
-## Usage
+## <a id="usage"></a>Usage
 
 Sublime Worksheet provides two commands which you can access from the command palette (<kbd>CMD-SHIFT-P</kbd> / <kbd>CTRL-SHIFT-P</kbd>):
 
@@ -61,7 +58,43 @@ Any errors or timeouts will cause evaluation to stop and the error to be written
 
 Removes comments inserted by evaluating the worksheet.
 
-## Known issues
+## <a id="languages"></a>Supported Languages
+
+Sublime worksheet uses the interpreters you have installed on your system. Generally speaking if you can run an interpreter from the command line it should work in Sublime Text. The following languages are supported:
+
+### JavaScript
+
+Uses the interactive mode of the NodeJS command line interpreter.
+
+ - [Installing Node.js via package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
+ - [Source code and binary downloads](http://nodejs.org/download/) 
+
+### PHP
+
+Uses the PHP CLI executable in interactive mode (`php -a`).  
+See your OS package manager documentation or [the PHP website](http://php.net/downloads.php) for help setting this up.
+
+### Python
+
+Uses the interactive mode of the Python binary (`python -i`).  
+See your OS package manager documentation or [the Python website](http://www.python.org/download/) for help setting this up.
+
+### Ruby
+
+Uses `irb`.  
+See your OS package manager documentation or [the Ruby website](http://www.ruby-lang.org/en/downloads/) for help setting this up.
+
+### Scala
+
+Uses the [Scala REPL](http://www.scala-lang.org/node/2097).  
+See your OS package manager documentation or [the Scala website](http://www.scala-lang.org/downloads) for help setting this up.
+
+### Racket/Scheme
+
+Uses [Guile](http://www.gnu.org/software/guile/).  
+See your OS package manager documentation or [the Guile website](http://www.gnu.org/software/guile/download.html#releases) for help setting this up.
+
+## <a id="issues"></a>Known issues
 
 ### Python IndentationError
 
@@ -71,7 +104,7 @@ This arises when indented lines are separated by one or more unindented blank li
 
 For more information see [this issue](https://github.com/jcartledge/sublime-worksheet/issues/23) or [this StackOverflow thread](http://stackoverflow.com/questions/2727988/python-indentation-in-empty-lines).
 
-## Contributing
+## <a id="contributing"></a>Contributing
 
 Please feel free. More REPLs would be great - take a look at [worksheet.sublime-settings](worksheet.sublime-settings) (and [this pull request](https://github.com/jcartledge/sublime-worksheet/pull/22)) for details of how these are implemented.
 
