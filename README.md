@@ -14,11 +14,11 @@ It's great for trying things out directly in Sublime Text.
 
  - [Installation](#installation)
  - [Usage](#usage)
- - [Supported languages](#languages)
- - [Known issues](#issues)
+ - [Supported languages](#supported-languages)
+ - [Known issues](#known-issues)
  - [Contributing](#contributing)
 
-## <a id="installation"></a>Installation
+## Installation
 
 ### Package Control
 
@@ -38,7 +38,7 @@ Download the files using the .zip download option.
 Unzip the files.  
 Copy the folder to your SublimeText 2 Packages directory.
 
-## <a id="usage"></a>Usage
+## Usage
 
 Sublime Worksheet provides two commands which you can access from the command palette (<kbd>CMD-SHIFT-P</kbd> / <kbd>CTRL-SHIFT-P</kbd>):
 
@@ -58,7 +58,7 @@ Any errors or timeouts will cause evaluation to stop and the error to be written
 
 Removes comments inserted by evaluating the worksheet.
 
-## <a id="languages"></a>Supported Languages
+## Supported Languages
 
 Sublime worksheet uses the interpreters you have installed on your system. Generally speaking if you can run an interpreter from the command line it should work in Sublime Text. The following languages are supported:
 
@@ -109,7 +109,7 @@ See your OS package manager documentation or [the Scala website](http://www.scal
 Uses [Guile](http://www.gnu.org/software/guile/).  
 See your OS package manager documentation or [the Guile website](http://www.gnu.org/software/guile/download.html#releases) for help setting this up.
 
-## <a id="issues"></a>Known issues
+## Known issues
 
 ### Python IndentationError
 
@@ -119,7 +119,7 @@ This arises when indented lines are separated by one or more unindented blank li
 
 For more information see [this issue](https://github.com/jcartledge/sublime-worksheet/issues/23) or [this StackOverflow thread](http://stackoverflow.com/questions/2727988/python-indentation-in-empty-lines).
 
-## <a id="contributing"></a>Contributing
+## Contributing
 
 Please feel free. More REPLs would be great - take a look at [worksheet.sublime-settings](worksheet.sublime-settings) (and [this pull request](https://github.com/jcartledge/sublime-worksheet/pull/22)) for details of how these are implemented.
 
