@@ -10,6 +10,12 @@
             "cmd": "node -e \"require('repl').start('node> ')\"",
             "prompt": ["node> ", "\\.\\.+ "]
         },
+        "Perl": {
+            "cmd": "re.pl --rcfile=\"{repl_base}/perl/perl.rc\" --profile Minimal",
+            "prompt": [">>> "],
+            "prefix": "# > ",
+            "error": ["[A-Z][a-z]+error:"]
+        },
         "PHP": {
             "cmd": "php -a",
             "prompt": ["(php|>>>) [>{\\('\"] "],

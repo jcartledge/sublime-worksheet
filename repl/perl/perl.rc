@@ -1,0 +1,22 @@
+use strict;
+use warnings;
+
+use Carp;
+
+$_REPL->load_plugin($_) foreach qw(
+  DDC
+  FancyPrompt
+  LexEnv
+  Packages
+  Commands
+  MultiLine::PPI
+  History
+  ReadLineHistory
+);
+
+$_REPL->fancy_prompt(sub {
+  return '>>> ';
+});
+$_REPL->fancy_continuation_prompt(sub {
+  return '>>> ';
+});

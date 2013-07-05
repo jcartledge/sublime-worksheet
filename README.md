@@ -69,6 +69,21 @@ Uses the interactive mode of the NodeJS command line interpreter.
  - [Installing Node.js via package manager](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager)
  - [Source code and binary downloads](http://nodejs.org/download/) 
 
+### Perl
+
+Uses `re.pl` which is provided by the `Devel::REPL` package.
+
+ - Install via [CPAN](http://www.cpan.org/):
+
+```bash
+  # You may need to run these as root  
+  cpan -i Devel::REPL  
+  # You also need to install a readline implemetation:  
+  cpan -i Term::ReadLine::Perl
+```
+
+ - Install using your OS package manager e.g. `apt-get install libdevel-repl-perl`
+
 ### PHP
 
 Uses the PHP CLI executable in interactive mode (`php -a`).  

@@ -1,4 +1,5 @@
 import re
+from os import path
 from functools import reduce
 
 from . import PY3K
@@ -9,10 +10,15 @@ from .ftfy import fix_text
 if PY3K:
     unicode = str
 
+repl_base = path.abspath(path.dirname(__file__))
+
 
 def get_repl(language, repl_def):
     if repl_def.get("cmd") is not None:
-        return Repl(repl_def.pop("cmd"), **repl_def)
+        return Repl(
+            repl_def.pop("cmd").format(repl_base=repl_base),
+            **repl_def
+        )
     raise ReplStartError("No worksheet REPL found for " + language)
 
 
