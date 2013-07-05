@@ -11,8 +11,7 @@
             "prompt": ["node> ", "\\.\\.+ "]
         },
         "Perl": {
-            "cmd": "re.pl --rcfile=./repl/perl.rc --profile Minimal",
-            "cwd": "package_base",
+            "cmd": "re.pl --rcfile=\"{repl_base}/perl/perl.rc\" --profile Minimal",
             "prompt": [">>> "],
             "prefix": "# > ",
             "error": ["[A-Z][a-z]+error:"]
