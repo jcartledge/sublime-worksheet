@@ -4,7 +4,6 @@ from os import path
 from functools import reduce
 
 from . import PY3K
-from .ftfy import fix_text
 
 POSIX = sys.platform != 'win32'
 
@@ -12,8 +11,30 @@ if POSIX:
     from . import pexpect
     spawn = pexpect.spawn
 else:
+    # (ST2) In order to get unicodedata work, add search path to where `sublime_text.exe` locates
+    def add_search_path(lib_path):
+        def _try_get_short_path(p):
+            # Python2.x cannot handle unicode path (contains any non-ascii characters) correctly
+            p = path.normpath(p)
+            if (not PY3K) and (not POSIX) and isinstance(p, unicode):
+                try:
+                    import locale
+                    p = p.encode(locale.getpreferredencoding())
+                except:
+                    from ctypes import windll, create_unicode_buffer
+                    buf = create_unicode_buffer(512)
+                    if windll.kernel32.GetShortPathNameW(p, buf, len(buf)):
+                        p = buf.value
+            return p
+        lib_path = _try_get_short_path(lib_path)
+        if lib_path not in sys.path:
+            sys.path.append(lib_path)
+
+    add_search_path(path.dirname(sys.executable))
     from . import winpexpect as pexpect
     spawn = pexpect.winspawn
+
+from .ftfy import fix_text
 
 if PY3K:
     unicode = str
