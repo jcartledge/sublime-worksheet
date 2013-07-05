@@ -8,7 +8,8 @@
     "worksheet_languages": {
         "JavaScript": {
             "cmd": "node -e \"require('repl').start('node> ')\"",
-            "prompt": ["node> ", "\\.\\.+ "]
+            "prompt": ["node> ", "\\.\\.+ "],
+            "ignore": ["^\\n"]
         },
         "Perl": {
             "cmd": "re.pl --rcfile=\"{repl_base}/perl/perl.rc\" --profile Minimal",
