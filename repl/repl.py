@@ -73,12 +73,14 @@ class Repl():
             # Timeout
             return ReplResult(prefix + "Execution timed out.", is_timeout=True)
         else:
+            # For multiline statements additional newline is needed. See #26 issue
+            start_index = 1 if len(input.strip()) else 0
             # Regular prompt - need to check for error
             result_str = "\n".join([
                 prefix + line
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())
-            ][1:])
+            ][start_index:])
             is_eof = self.prompt[index] == pexpect.EOF
             if is_eof:
                 result_str = "\n".join([result_str, prefix + " [exit]"])
