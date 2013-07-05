@@ -1,11 +1,19 @@
 import re
+import sys
 from os import path
 from functools import reduce
 
 from . import PY3K
-from . import pexpect
 from .ftfy import fix_text
 
+POSIX = sys.platform != 'win32'
+
+if POSIX:
+    from . import pexpect
+    spawn = pexpect.spawn
+else:
+    from . import winpexpect as pexpect
+    spawn = pexpect.winspawn
 
 if PY3K:
     unicode = str
@@ -52,7 +60,7 @@ class ReplCloseError(Exception):
 
 class Repl():
     def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None):
-        self.repl = pexpect.spawn(cmd, timeout=timeout, cwd=cwd)
+        self.repl = spawn(cmd, timeout=timeout, cwd=cwd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
@@ -76,11 +84,16 @@ class Repl():
             # For multiline statements additional newline is needed. See #26 issue
             start_index = 1 if len(input.strip()) else 0
             # Regular prompt - need to check for error
-            result_str = "\n".join([
+            result_list = [
                 prefix + line
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())
-            ][start_index:])
+            ]
+            if POSIX:
+                # this is needed for POSIX only
+                # on windows, there's no echo back for the input
+                result_list = result_list[start_index:]
+            result_str = "\n".join(result_list)
             is_eof = self.prompt[index] == pexpect.EOF
             if is_eof:
                 result_str = "\n".join([result_str, prefix + " [exit]"])
