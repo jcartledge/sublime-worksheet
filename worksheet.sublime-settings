@@ -37,14 +37,25 @@
             "ignore": ["^[\\s]*\n", "^[\\s]*;;"]
         },
         "Ruby": {
-            "cmd": "irb --prompt simple",
+            "cmd": {
+                "windows": "irb.bat --prompt simple",
+                "linux": "irb --prompt simple",
+                "osx": "irb --prompt simple"
+            },
             "prompt": [">> ", "\\?>"],
             "prefix": "# ="
         },
         "Scala": {
-            "cmd": "scala",
+            "cmd": {
+                "windows": "scala.bat -i",
+                "linux": "scala",
+                "osx": "scala"
+            },
             "prompt": ["scala> ", "     \\| "],
-            "error": ["<console>:[0-9]+: error:"]
+            "error": ["<console>:[0-9]+: error:"],
+            "env": {
+                "windows": {"EMACS": 1}
+            }
         }
     }
 }

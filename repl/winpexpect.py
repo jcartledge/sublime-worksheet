@@ -1,9 +1,9 @@
-import os
-import sys
-import subprocess
-import time
 import itertools
 import locale
+import os
+import subprocess
+import sys
+import time
 
 from collections import namedtuple
 from threading import Thread
@@ -79,27 +79,28 @@ def split_command_line(cmdline):
         raise ValueError('Illegal command line.')
     return result
 
-join_command_line = subprocess.list2cmdline
 
-
-def which(command):
-    path = os.environ.get('Path', '')
-    path = path.split(os.pathsep)
-    pathext = os.environ.get('Pathext', '.exe;.com;.bat;.cmd')
-    pathext = pathext.split(os.pathsep)
-    for dir in itertools.chain([''], path):
-        for ext in itertools.chain([''], pathext):
-            fname = os.path.join(dir, command) + ext
-            if os.access(fname, os.X_OK):
-                return fname
-
+def which(executable):
+    if os.path.dirname(executable):
+        return executable
+    paths = os.environ.get('PATH', '').split(os.pathsep)
+    exts = os.environ.get('PATHEXT', '.EXE').split(os.pathsep)
+    (base, ext) = os.path.splitext(executable)
+    if ext:
+        exts = [ext]
+    for path in paths:
+        for ext in exts:
+            filepath = os.path.join(path, base + ext)
+            if os.path.isfile(filepath) and os.access(filepath, os.X_OK):
+                return filepath
+    return None
 
 class winspawn(spawn):
     """This is the main class interface for Pexpect. Use this class to start
     and control child applications."""
     def __init__(self, command, args=[], timeout=30, maxread=2000, searchwindowsize=None,
                  logfile=None, cwd=None, env=None, encoding='utf-8'):
-        self.child_output_queue = Queue()
+        self.reader_queue = Queue()
         super(winspawn, self).__init__(command, args, timeout=timeout, maxread=maxread,
                                        searchwindowsize=searchwindowsize, logfile=logfile,
                                        cwd=cwd, env=env, encoding=encoding)
@@ -108,19 +109,13 @@ class winspawn(spawn):
         """Start the child process. If args is empty, command will be parsed
         according to the rules of the MS C runtime, and args will be set to
         the parsed args."""
-        if args:
-            args = args[:]  # copy
-            args.insert(0, command)
+        if not isinstance(command, list):
+            cmd = split_command_line(command)
         else:
-            args = split_command_line(command)
-            command = args[0]
-
-        self.command = command
-        self.args = args
-        executable = which(self.command)
-        if executable is None:
-            raise ExceptionPexpect('Executable not found: %s' % self.command)
-        args = join_command_line(self.args)
+            cmd = command
+        executable = which(cmd[0])
+        if executable:
+            cmd[0] = executable
 
         # Create the pipes
         startupinfo = STARTUPINFO()
@@ -133,8 +128,8 @@ class winspawn(spawn):
                 executable = executable.encode(encoding)
             if isinstance(args, unicode):
                 args = args.encode(encoding)
-        self.popen = Popen(args,
-                           executable=executable,
+
+        self.popen = Popen(cmd,
                            startupinfo=startupinfo,
                            creationflags=0x8000000,  # CREATE_NO_WINDOW
                            bufsize=1,
@@ -151,18 +146,18 @@ class winspawn(spawn):
         self.terminated = False
         self.closed = False
 
-        self.stdout_handle = self.popen.stdout
-        self.stdout_reader = Thread(target=self._child_reader, args=(self.child_output_queue,))
+        self.stdout_reader = Thread(target=self._child_reader, args=(self.reader_queue,))
         self.stdout_reader.daemon = True
         self.stdout_reader.start()
 
-    def _child_reader(self, q):
+    def _child_reader(self, queue):
         while True:
             try:
-                data = self.stdout_handle.read(1)
-                if len(data) == 0:
+                b = self.popen.stdout.read(1)
+                if len(b) == 0:
+                    queue.put(None)
                     break
-                q.put(data)
+                queue.put(b)
             except:
                 break
 
@@ -214,7 +209,6 @@ class winspawn(spawn):
         if not self.isalive():
             raise ExceptionPexpect('Cannot wait for dead child process.')
         self.exitstatus = self.popen.wait()
-        self.stdout_handle = None
         self.terminated = True
         return self.exitstatus
 
@@ -233,7 +227,6 @@ class winspawn(spawn):
     def kill(self, sig):
         if self.isalive():
             self.popen.kill()
-            self.stdout_handle = None
 
     def read_nonblocking(self, size=1, timeout=-1):
         if self.closed:
@@ -246,11 +239,14 @@ class winspawn(spawn):
             self.flag_eof = True
             raise EOF('End Of File (EOF) in read_nonblocking(). Braindead platform.')
 
-        q = self.child_output_queue
+        q = self.reader_queue
 
         # Check first byte timeout
         try:
             s = q.get(True, timeout)
+            if s is None:
+                self.flag_eof = True
+                raise EOF('End of File (EOF) in read_nonblocking().')
         except Empty:
             if not self.isalive():
                 self.flag_eof = True
@@ -261,7 +257,11 @@ class winspawn(spawn):
         if len(s) < size:
             while True:
                 try:
-                    s += q.get_nowait()
+                    b = q.get_nowait()
+                    if b is None:
+                        self.flag_eof = True
+                        raise EOF('End of File (EOF) in read_nonblocking().')
+                    s += b
                 except Empty:
                     break
                 if len(s) == size:

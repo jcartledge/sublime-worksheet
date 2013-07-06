@@ -17,14 +17,34 @@ from .ftfy import fix_text
 repl_base = os.path.abspath(os.path.dirname(__file__))
 
 
+def _merge_env(env):
+    new_env = os.environ.copy()
+    if not env:
+        return new_env
+    env = env.copy()
+    # interpolate then merge
+    for k, v in list(env.items()):
+        env[k] = str(v).format(**new_env)
+    new_env.update(env)
+    return new_env
+
+
+def _plat_repl_def(repl_def):
+    for k, v in list(repl_def.items()):
+        if isinstance(v, dict):
+            repl_def[k] = v.get(PLATFORM)
+    return repl_def
+
 
 def get_repl(language, repl_def):
-    if repl_def.get("cmd") is not None:
-        return Repl(
-            repl_def.pop("cmd").format(repl_base=repl_base),
-            **repl_def
-        )
-    raise ReplStartError("No worksheet REPL found for " + language)
+    repl_def = _plat_repl_def(repl_def)
+    if "cmd" not in repl_def:
+        raise ReplStartError("No worksheet REPL found for " + language)
+    repl_def["env"] = _merge_env(repl_def.get("env"))
+    return Repl(
+        repl_def.pop("cmd").format(repl_base=repl_base),
+        **repl_def
+    )
 
 
 class ReplResult():
@@ -56,14 +76,15 @@ class ReplCloseError(Exception):
 
 
 class Repl():
-    def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None):
-        self.repl = spawn(cmd, timeout=timeout, cwd=cwd)
+    def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None,
+                 env=None, suppress_echo=False):
+        self.repl = spawn(cmd, timeout=timeout, cwd=cwd, env=env)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
         self.error = [re.compile(prefix + x) for x in error]
         self.ignore = [re.compile(x) for x in ignore]
-        self.repl.timeout = timeout
+        self.suppress_echo = suppress_echo
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
             raise ReplStartError("Could not start " + cmd)
