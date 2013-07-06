@@ -1,45 +1,21 @@
 import re
-import sys
-from os import path
+import os
 from functools import reduce
 
-from . import PY3K
+from . import PY3K, POSIX, PLATFORM
 
-POSIX = sys.platform != 'win32'
 
 if POSIX:
     from . import pexpect
     spawn = pexpect.spawn
 else:
-    # (ST2) In order to get unicodedata work, add search path to where `sublime_text.exe` locates
-    def add_search_path(lib_path):
-        def _try_get_short_path(p):
-            # Python2.x cannot handle unicode path (contains any non-ascii characters) correctly
-            p = path.normpath(p)
-            if (not PY3K) and (not POSIX) and isinstance(p, unicode):
-                try:
-                    import locale
-                    p = p.encode(locale.getpreferredencoding())
-                except:
-                    from ctypes import windll, create_unicode_buffer
-                    buf = create_unicode_buffer(512)
-                    if windll.kernel32.GetShortPathNameW(p, buf, len(buf)):
-                        p = buf.value
-            return p
-        lib_path = _try_get_short_path(lib_path)
-        if lib_path not in sys.path:
-            sys.path.append(lib_path)
-
-    add_search_path(path.dirname(sys.executable))
     from . import winpexpect as pexpect
     spawn = pexpect.winspawn
 
 from .ftfy import fix_text
 
-if PY3K:
-    unicode = str
+repl_base = os.path.abspath(os.path.dirname(__file__))
 
-repl_base = path.abspath(path.dirname(__file__))
 
 
 def get_repl(language, repl_def):
@@ -107,12 +83,12 @@ class Repl():
             # Regular prompt - need to check for error
             result_list = [
                 prefix + line
-                for line in fix_text(unicode(self.repl.before)).split("\n")
+                for line in fix_text(self.repl.before).split("\n")
                 if len(line.strip())
             ]
             if POSIX:
                 # this is needed for POSIX only
-                # on windows, there's no echo back for the input
+                # on windows, there's no echo back for the input (defect: not for irb)
                 result_list = result_list[start_index:]
             result_str = "\n".join(result_list)
             is_eof = self.prompt[index] == pexpect.EOF

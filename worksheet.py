@@ -11,10 +11,11 @@ else:
     import repl
 
 
-# Make sure /usr/local/bin is on the path
-exec_path = os.getenv('PATH', '')
-if not "/usr/local/bin" in exec_path:
-    os.environ["PATH"] = exec_path + os.pathsep + "/usr/local/bin"
+if sublime.platform() != 'windows':
+    # Make sure /usr/local/bin is on the path
+    exec_path = os.getenv('PATH', '').split(os.pathsep)
+    if not "/usr/local/bin" in exec_path:
+        os.environ["PATH"] = os.pathsep.join(exec_path + ["/usr/local/bin"])
 
 
 class WorksheetCommand(sublime_plugin.TextCommand):
