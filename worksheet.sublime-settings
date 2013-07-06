@@ -3,7 +3,12 @@
         "timeout": 10,
         "ignore": [],
         "prefix": "// > ",
-        "error": ["[A-Z][a-z]+Error:"]
+        "error": ["[A-Z][a-z]+Error:"],
+        "strip_echo": {
+            "windows": false,
+            "osx": true,
+            "linux": true
+        }
     },
     "worksheet_languages": {
         "JavaScript": {
@@ -43,7 +48,8 @@
                 "osx": "irb --prompt simple"
             },
             "prompt": [">> ", "\\?>"],
-            "prefix": "# ="
+            "prefix": "# =",
+            "strip_echo": true
         },
         "Scala": {
             "cmd": {

@@ -77,14 +77,14 @@ class ReplCloseError(Exception):
 
 class Repl():
     def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None,
-                 env=None, suppress_echo=False):
+                 env=None, strip_echo=True):
         self.repl = spawn(cmd, timeout=timeout, cwd=cwd, env=env)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
         self.error = [re.compile(prefix + x) for x in error]
         self.ignore = [re.compile(x) for x in ignore]
-        self.suppress_echo = suppress_echo
+        self.strip_echo = strip_echo
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
             raise ReplStartError("Could not start " + cmd)
@@ -107,9 +107,7 @@ class Repl():
                 for line in fix_text(self.repl.before).split("\n")
                 if len(line.strip())
             ]
-            if POSIX:
-                # this is needed for POSIX only
-                # on windows, there's no echo back for the input (defect: not for irb)
+            if self.strip_echo:
                 result_list = result_list[start_index:]
             result_str = "\n".join(result_list)
             is_eof = self.prompt[index] == pexpect.EOF
