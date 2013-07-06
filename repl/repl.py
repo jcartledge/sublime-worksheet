@@ -1,11 +1,40 @@
 import re
+import sys
 from os import path
 from functools import reduce
 
 from . import PY3K
-from . import pexpect
-from .ftfy import fix_text
 
+POSIX = sys.platform != 'win32'
+
+if POSIX:
+    from . import pexpect
+    spawn = pexpect.spawn
+else:
+    # (ST2) In order to get unicodedata work, add search path to where `sublime_text.exe` locates
+    def add_search_path(lib_path):
+        def _try_get_short_path(p):
+            # Python2.x cannot handle unicode path (contains any non-ascii characters) correctly
+            p = path.normpath(p)
+            if (not PY3K) and (not POSIX) and isinstance(p, unicode):
+                try:
+                    import locale
+                    p = p.encode(locale.getpreferredencoding())
+                except:
+                    from ctypes import windll, create_unicode_buffer
+                    buf = create_unicode_buffer(512)
+                    if windll.kernel32.GetShortPathNameW(p, buf, len(buf)):
+                        p = buf.value
+            return p
+        lib_path = _try_get_short_path(lib_path)
+        if lib_path not in sys.path:
+            sys.path.append(lib_path)
+
+    add_search_path(path.dirname(sys.executable))
+    from . import winpexpect as pexpect
+    spawn = pexpect.winspawn
+
+from .ftfy import fix_text
 
 if PY3K:
     unicode = str
@@ -52,7 +81,7 @@ class ReplCloseError(Exception):
 
 class Repl():
     def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None):
-        self.repl = pexpect.spawn(cmd, timeout=timeout, cwd=cwd)
+        self.repl = spawn(cmd, timeout=timeout, cwd=cwd)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
@@ -76,11 +105,16 @@ class Repl():
             # For multiline statements additional newline is needed. See #26 issue
             start_index = 1 if len(input.strip()) else 0
             # Regular prompt - need to check for error
-            result_str = "\n".join([
+            result_list = [
                 prefix + line
                 for line in fix_text(unicode(self.repl.before)).split("\n")
                 if len(line.strip())
-            ][start_index:])
+            ]
+            if POSIX:
+                # this is needed for POSIX only
+                # on windows, there's no echo back for the input
+                result_list = result_list[start_index:]
+            result_str = "\n".join(result_list)
             is_eof = self.prompt[index] == pexpect.EOF
             if is_eof:
                 result_str = "\n".join([result_str, prefix + " [exit]"])

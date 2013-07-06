@@ -71,10 +71,6 @@ try:
     import re
     import struct
     import types
-    import pty
-    import tty
-    import termios
-    import fcntl
     import errno
     import traceback
     import signal
@@ -86,6 +82,14 @@ try:
     # Linux ST2 doesn't package the resource module so ... uh ...
     import resource
 except:
+    pass
+
+try:
+    import pty
+    import tty
+    import termios
+    import fcntl
+except ImportError:
     pass
 
 try:
@@ -175,8 +179,6 @@ class TIMEOUT(ExceptionPexpect):
 ##    """
 ##class MAXBUFFER(ExceptionPexpect):
 ##    """Raised when a scan buffer fills before matching an expected pattern."""
-
-PY3 = (sys.version_info[0] >= 3)
 
 def _cast_bytes(s, enc):
     if isinstance(s, string_types):
@@ -435,9 +437,13 @@ class spawnb(Iterator):
         stores the status returned by os.waitpid. You can interpret this using
         os.WIFEXITED/os.WEXITSTATUS or os.WIFSIGNALED/os.TERMSIG. """
 
-        self.STDIN_FILENO = pty.STDIN_FILENO
-        self.STDOUT_FILENO = pty.STDOUT_FILENO
-        self.STDERR_FILENO = pty.STDERR_FILENO
+        try:
+            self.STDIN_FILENO = pty.STDIN_FILENO
+            self.STDOUT_FILENO = pty.STDOUT_FILENO
+            self.STDERR_FILENO = pty.STDERR_FILENO
+        except:
+            pass
+
         self.stdin = sys.stdin
         self.stdout = sys.stdout
         self.stderr = sys.stderr
@@ -1562,8 +1568,10 @@ class spawnb(Iterator):
         """
 
         # Flush the buffer.
-        if PY3: self.stdout.write(_cast_unicode(self.buffer, self.encoding))
-        else:   self.stdout.write(self.buffer)
+        if PY3K:
+            self.stdout.write(_cast_unicode(self.buffer, self.encoding))
+        else:
+            self.stdout.write(self.buffer)
         self.stdout.flush()
         self.buffer = self._empty_buffer
         mode = tty.tcgetattr(self.STDIN_FILENO)
