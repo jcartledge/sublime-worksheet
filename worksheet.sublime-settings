@@ -3,9 +3,15 @@
         "timeout": 10,
         "ignore": [],
         "prefix": "// > ",
-        "error": ["[A-Z][a-z]+Error:"]
+        "error": ["[A-Z][A-Za-z]+Error:"]
     },
     "worksheet_languages": {
+        "Elixir": {
+            "cmd": "iex",
+            "prompt": ["iex\\([\\d]+\\)> ", "\\.\\.\\.\\([\\d]+\\)> "],
+            "prefix": "# > ",
+            "error": ["\\*\\* \\([A-Z][a-zA-Z]+Error\\)"]
+        },
         "JavaScript": {
             "cmd": "node -e \"require('repl').start('node> ')\"",
             "prompt": ["node> ", "\\.\\.+ "],
