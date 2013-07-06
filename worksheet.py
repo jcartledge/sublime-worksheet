@@ -31,7 +31,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
                 repl_def["cwd"] = os.path.dirname(filename)
             self.repl = repl.get_repl(language, repl_def)
         except repl.ReplStartError as e:
-            return sublime.error_message(e.message)
+            return sublime.error_message(str(e))
         self.remove_previous_results(edit)
 
     def load_settings(self):
@@ -107,7 +107,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             self.repl.close()
         except repl.ReplCloseError as e:
             sublime.error_message(
-                "Could not close the REPL:\n" + e.message)
+                "Could not close the REPL:\n" + str(e))
 
 
 class WorksheetEvalCommand(WorksheetCommand):
