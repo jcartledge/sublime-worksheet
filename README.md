@@ -58,6 +58,25 @@ Any errors or timeouts will cause evaluation to stop and the error to be written
 
 Removes comments inserted by evaluating the worksheet.
 
+## Overide settings
+
+You also can override Sublime Worksheet settings per-project so you can use your virtual environnement. For example, to add your virtualenv, just append this to your `.sublime-project` file:
+
+```json
+"settings": {
+    "worksheet_languages": {
+        "Python": {
+            "cmd": "/home/adrien/.pyenvs/web2/bin/python -i",
+            "prompt": [">>> ", "\\.\\.+ "],
+            "prefix": "# > ",
+            "error": ["Traceback ", "  File \"<stdin>\","]
+        },
+    }
+}
+```
+
+Please see the `worksheet.sublime-settings` for more configuration examples.
+
 ## Supported Languages
 
 Sublime worksheet uses the interpreters you have installed on your system. Generally speaking if you can run an interpreter from the command line it should work in Sublime Text. The following languages are supported:

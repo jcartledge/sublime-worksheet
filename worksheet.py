@@ -22,10 +22,11 @@ class WorksheetCommand(sublime_plugin.TextCommand):
         self.load_settings()
         try:
             language = self.get_language()
-            default_def = self.settings.get("worksheet_defaults")
+            default_def = self.get_repl_settings()
             repl_defs = self.settings.get("worksheet_languages")
+            project_repl_defs = self.project_settings.get("worksheet_languages")
             repl_def = dict(
-                list(default_def.items()) + list(repl_defs.get(language, {}).items()))
+                list(default_def) + list(project_repl_defs.get(language, repl_defs.get(language, {})).items()))
             filename = self.view.file_name()
             if filename is not None:
                 repl_def["cwd"] = os.path.dirname(filename)
@@ -37,6 +38,14 @@ class WorksheetCommand(sublime_plugin.TextCommand):
     def load_settings(self):
         self.settings = sublime.load_settings("worksheet.sublime-settings")
         self.timeout = self.settings.get("worksheet_timeout")
+
+    def get_repl_settings(self):
+        default_def = self.settings.get("worksheet_defaults")
+        project_def = self.project_settings.get("worksheet_defaults")
+        settings = []
+        for key, setting in default_def.items():
+            settings.append((key, project_def.get(key, setting)))
+        return settings
 
     def get_language(self):
         return self.view.settings().get("syntax").split('/')[-1].split('.')[0]
