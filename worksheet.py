@@ -24,7 +24,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             language = self.get_language()
             default_def = self.get_repl_settings()
             repl_defs = self.settings.get("worksheet_languages")
-            project_repl_defs = self.project_settings.get("worksheet_languages")
+            project_repl_defs = self.project_settings.get("worksheet_languages", {})
             repl_def = dict(
                 list(default_def) + list(project_repl_defs.get(language, repl_defs.get(language, {})).items()))
             filename = self.view.file_name()
@@ -41,7 +41,9 @@ class WorksheetCommand(sublime_plugin.TextCommand):
 
     def get_repl_settings(self):
         default_def = self.settings.get("worksheet_defaults")
-        project_def = self.project_settings.get("worksheet_defaults")
+        if not hasattr(self, "project_settings"):
+            self.project_settings = {}
+        project_def = self.project_settings.get("worksheet_defaults", {})
         settings = []
         for key, setting in default_def.items():
             settings.append((key, project_def.get(key, setting)))
