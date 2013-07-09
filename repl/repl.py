@@ -1,54 +1,50 @@
 import re
-import sys
-from os import path
+import os
 from functools import reduce
 
-from . import PY3K
+from . import PY3K, POSIX, PLATFORM
 
-POSIX = sys.platform != 'win32'
 
 if POSIX:
     from . import pexpect
     spawn = pexpect.spawn
 else:
-    # (ST2) In order to get unicodedata work, add search path to where `sublime_text.exe` locates
-    def add_search_path(lib_path):
-        def _try_get_short_path(p):
-            # Python2.x cannot handle unicode path (contains any non-ascii characters) correctly
-            p = path.normpath(p)
-            if (not PY3K) and (not POSIX) and isinstance(p, unicode):
-                try:
-                    import locale
-                    p = p.encode(locale.getpreferredencoding())
-                except:
-                    from ctypes import windll, create_unicode_buffer
-                    buf = create_unicode_buffer(512)
-                    if windll.kernel32.GetShortPathNameW(p, buf, len(buf)):
-                        p = buf.value
-            return p
-        lib_path = _try_get_short_path(lib_path)
-        if lib_path not in sys.path:
-            sys.path.append(lib_path)
-
-    add_search_path(path.dirname(sys.executable))
     from . import winpexpect as pexpect
     spawn = pexpect.winspawn
 
 from .ftfy import fix_text
 
-if PY3K:
-    unicode = str
+repl_base = os.path.abspath(os.path.dirname(__file__))
 
-repl_base = path.abspath(path.dirname(__file__))
+
+def _merge_env(env):
+    new_env = os.environ.copy()
+    if not env:
+        return new_env
+    env = env.copy()
+    # interpolate then merge
+    for k, v in list(env.items()):
+        env[k] = str(v).format(**new_env)
+    new_env.update(env)
+    return new_env
+
+
+def _plat_repl_def(repl_def):
+    for k, v in list(repl_def.items()):
+        if isinstance(v, dict):
+            repl_def[k] = v.get(PLATFORM)
+    return repl_def
 
 
 def get_repl(language, repl_def):
-    if repl_def.get("cmd") is not None:
-        return Repl(
-            repl_def.pop("cmd").format(repl_base=repl_base),
-            **repl_def
-        )
-    raise ReplStartError("No worksheet REPL found for " + language)
+    repl_def = _plat_repl_def(repl_def)
+    if "cmd" not in repl_def:
+        raise ReplStartError("No worksheet REPL found for " + language)
+    repl_def["env"] = _merge_env(repl_def.get("env"))
+    return Repl(
+        repl_def.pop("cmd").format(repl_base=repl_base),
+        **repl_def
+    )
 
 
 class ReplResult():
@@ -80,14 +76,15 @@ class ReplCloseError(Exception):
 
 
 class Repl():
-    def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None):
-        self.repl = spawn(cmd, timeout=timeout, cwd=cwd)
+    def __init__(self, cmd, prompt, prefix, error=[], ignore=[], timeout=10, cwd=None,
+                 env=None, strip_echo=True):
+        self.repl = spawn(cmd, timeout=timeout, cwd=cwd, env=env)
         base_prompt = [pexpect.EOF, pexpect.TIMEOUT]
         self.prompt = base_prompt + self.repl.compile_pattern_list(prompt)
         self.prefix = prefix
         self.error = [re.compile(prefix + x) for x in error]
         self.ignore = [re.compile(x) for x in ignore]
-        self.repl.timeout = timeout
+        self.strip_echo = strip_echo
         index = self.repl.expect_list(self.prompt)
         if self.prompt[index] in [pexpect.EOF, pexpect.TIMEOUT]:
             raise ReplStartError("Could not start " + cmd)
@@ -107,12 +104,10 @@ class Repl():
             # Regular prompt - need to check for error
             result_list = [
                 prefix + line
-                for line in fix_text(unicode(self.repl.before)).split("\n")
+                for line in fix_text(self.repl.before).split("\n")
                 if len(line.strip())
             ]
-            if POSIX:
-                # this is needed for POSIX only
-                # on windows, there's no echo back for the input
+            if self.strip_echo:
                 result_list = result_list[start_index:]
             result_str = "\n".join(result_list)
             is_eof = self.prompt[index] == pexpect.EOF

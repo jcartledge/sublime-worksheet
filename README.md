@@ -8,7 +8,7 @@ It works in Sublime Text 2 and 3.
 
 It's great for trying things out directly in Sublime Text.
 
-**Please note: this plugin does not work on Windows.** See [this issue](https://github.com/jcartledge/sublime-worksheet/issues/12) for more information.
+**Windows support** Thanks to @timonwong v0.8.0 introduces experimental Windows support. Please report any issues you discover.
 
 ## In this document
 
