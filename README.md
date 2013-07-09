@@ -81,6 +81,12 @@ Please see the `worksheet.sublime-settings` for more configuration examples.
 
 Sublime worksheet uses the interpreters you have installed on your system. Generally speaking if you can run an interpreter from the command line it should work in Sublime Text. The following languages are supported:
 
+### Elixir
+
+Uses the `iex` interpreter running on the Erlang VM.
+
+ - [Installation instructions](http://elixir-lang.org/getting_started/1.html) 
+
 ### JavaScript
 
 Uses the interactive mode of the NodeJS command line interpreter.
