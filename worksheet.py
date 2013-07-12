@@ -80,10 +80,7 @@ class WorksheetCommand(sublime_plugin.TextCommand):
             self.cleanup()
 
     def queue_thread(self, thread, start):
-        sublime.set_timeout(
-            lambda: self.handle_thread(thread, start),
-            100
-        )
+        sublime.set_timeout(lambda: self.handle_thread(thread, start), 5)
         return thread
 
     def handle_thread(self, thread, next_start):
