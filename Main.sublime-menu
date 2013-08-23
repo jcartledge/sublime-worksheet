@@ -1,39 +1,29 @@
-[
-    {
-        "caption": "Preferences",
-        "mnemonic": "n",
-        "id": "preferences",
+[{
+    "caption": "Preferences",
+    "mnemonic": "n",
+    "id": "preferences",
+    "children":
+    [{
+        "caption": "Package Settings",
+        "mnemonic": "P",
+        "id": "package-settings",
         "children":
-        [
+        [{
+            "id": "Worksheet",
+            "caption": "Worksheet",
+            "children":
+            [{
+                "command": "open_file", "args": {
+                    "file": "${packages}/Worksheet/worksheet.sublime-settings"
+                },
+                "caption": "Settings – Default"
+            },
             {
-                "caption": "Package Settings",
-                "mnemonic": "P",
-                "id": "package-settings",
-                "children":
-                [
-                    {
-                        "id": "Worksheet",
-                        "caption": "Worksheet",
-                        "children":
-                        [
-                            {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/Worksheet/worksheet.sublime-settings"
-                                },
-                                "caption": "Settings – Default"
-                            },
-                            {
-                                "command": "open_file", "args":
-                                {
-                                    "file": "${packages}/User/worksheet.sublime-settings"
-                                },
-                                "caption": "Settings – User"
-                            }
-                        ]
-                    }
-                ]
-            }
-        ]
-    }
-]
+                "command": "open_file", "args": {
+                    "file": "${packages}/User/worksheet.sublime-settings"
+                },
+                "caption": "Settings – User"
+            }]
+        }]
+    }]
+}]
